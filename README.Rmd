@@ -1,0 +1,57 @@
+---
+output: github_document
+---
+
+# ragent
+
+A simple R package demonstrating agent functionality using local LLMs through Ollama.
+
+## Installation
+
+You need to have [Ollama](https://ollama.ai/) installed and running on your system.
+Then you can install the package from GitHub:
+
+```r
+# install.packages("remotes")
+remotes::install_github("your-username/ragent")
+```
+
+## Usage
+
+The package provides a simple interface to create and interact with an agent:
+
+```r
+library(ragent)
+
+# Create a basic agent (uses llama3.2:1b for simple tasks)
+agent <- create_agent()
+
+# Ask a simple question
+agent$ask("What is the capital of France?")
+
+# Create an agent with tools
+tools <- list(
+  calculator = calc_tool
+)
+
+agent_with_tools <- create_agent(
+  tools = tools,
+  system_prompt = "You are a helpful assistant specialized in calculations."
+)
+
+# Use the agent with tools (automatically uses deepseek-r1:1.5b for reasoning)
+agent_with_tools$process_task("Calculate 123 * 456")
+```
+
+## Features
+
+- Simple agent creation with customizable system prompts
+- Dual model approach:
+  - llama3.2:1b for simple queries
+  - deepseek-r1:1.5b for complex reasoning
+- Extensible tool system
+- Pure R implementation
+
+## License
+
+MIT

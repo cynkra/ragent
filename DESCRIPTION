@@ -1,0 +1,19 @@
+Package: ragent
+Title: Simple R Agent Using Local LLM
+Version: 0.0.0.9000
+Authors@R:
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
+Description: Demonstrates a simple agent model in R using local LLM through
+    Ollama's API directly. The package provides basic agent functionality
+    for task execution and reasoning, using llama3.2:1b for simple tasks and
+    deepseek-r1:1.5b for complex reasoning.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports:
+    httr,
+    jsonlite
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

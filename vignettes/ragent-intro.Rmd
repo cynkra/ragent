@@ -1,0 +1,140 @@
+---
+title: "Introduction to ragent"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to ragent}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+The `ragent` package provides a simple way to create and interact with AI agents using local LLMs through Ollama. This vignette demonstrates the basic usage of the package.
+
+## Prerequisites
+
+Before using `ragent`, make sure you have:
+
+1. [Ollama](https://ollama.ai/) installed and running on your system
+2. Required models pulled:
+   - llama2-3b:1b (for simple tasks)
+   - deepseek-r1:8b (for complex reasoning)
+
+You can pull these models using:
+```bash
+ollama pull llama2-3b:1b
+ollama pull deepseek-r1:8b
+```
+
+## Basic Usage
+
+First, let's load the package and create a simple agent:
+
+```{r setup}
+library(ragent)
+
+# Create a basic agent (uses llama2-3b:1b by default)
+agent <- create_agent()
+```
+
+The agent automatically selects the appropriate model based on the query:
+- Simple queries use llama2-3b:1b
+- Complex reasoning queries use deepseek-r1:8b
+
+### Simple Questions
+
+For simple questions, the agent uses the lighter llama2-3b:1b model:
+
+```{r eval=FALSE}
+# Uses llama2-3b:1b
+agent$ask("What is the capital of France?")
+```
+
+### Complex Reasoning
+
+For questions requiring more reasoning, the agent automatically switches to deepseek-r1:8b:
+
+```{r eval=FALSE}
+# Uses deepseek-r1:8b
+agent$ask("Can you explain why Paris became the capital of France and its historical significance?")
+```
+
+### Using Tools
+
+The agent becomes more powerful when equipped with tools. For tool-based tasks, it always uses the more capable deepseek-r1:8b model:
+
+```{r}
+tools <- list(
+  calculator = calc_tool
+)
+
+agent_with_tools <- create_agent(
+  tools = tools,
+  system_prompt = "You are a helpful assistant specialized in calculations."
+)
+```
+
+Now we can ask the agent to perform calculations:
+
+```{r eval=FALSE}
+agent_with_tools$process_task("Calculate the square root of 21432.13213")
+```
+
+## Creating Custom Tools
+
+You can create your own tools by writing functions that take a string argument and return a result:
+
+```{r}
+# Example custom tool
+weather_tool <- function(location) {
+  paste("The weather in", location, "is sunny (this is a mock response)")
+}
+
+# Add description to weather tool
+attr(weather_tool, "description") <- "Returns a weather report for a given location."
+
+agent_weather <- create_agent(
+  tools = list(
+    weather_tool = weather_tool
+  ),
+  system_prompt = "You are a helpful assistant specialized in weather reports."
+)
+
+agent_weather$process_task("How is the weather in Zurich?")
+
+```
+
+## Model Selection
+
+The agent uses a simple heuristic to determine which model to use:
+
+1. Simple queries (llama2-3b:1b):
+   - Basic facts
+   - Short answers
+   - Direct questions
+
+2. Complex queries (deepseek-r1:8b):
+   - Questions starting with why, how, explain
+   - Analysis requests
+   - Comparisons
+   - Tool-based tasks
+
+You can also specify different models when creating the agent:
+
+```{r eval=FALSE}
+agent <- create_agent(
+  model = "llama2-3b:1b",        # for simple tasks
+  reasoning_model = "deepseek-r1:8b"  # for complex tasks
+)
+```
+
+## Conclusion
+
+The `ragent` package provides a flexible framework for creating AI agents that can use local LLMs and custom tools. By using different models for different types of tasks, it balances efficiency with capability - using a lighter model for simple tasks and a more powerful model for complex reasoning.
