@@ -149,11 +149,42 @@ The tool can be used in two ways:
 
 2. **As Part of an Agent**:
    ```r
+   # Create an agent that can intelligently query the knowledge base
    agent <- create_agent(
      tools = list(knowledgebase = knowledgebase),
-     system_prompt = "You are a helpful assistant that can answer questions based on the knowledge base."
+     system_prompt = "You are a helpful assistant with access to a knowledge base.
+       When answering questions:
+       1. Break down complex queries into smaller, focused lookups
+       2. Make multiple queries to gather comprehensive information
+       3. Combine and synthesize information from different sources
+       4. Ask follow-up queries based on initial results
+       Always cite your sources when providing information."
    )
-   agent$process_task("Tell me about our vacation policies.")
+
+   # The agent will make multiple intelligent queries
+   agent$process_task(
+     "I'm planning my vacation. What do I need to know about our policies,
+      procedures, and any deadlines?"
+   )
+
+   # The agent might make queries like:
+   # - "vacation policy"
+   # - "time off request procedure"
+   # - "vacation approval process"
+   # - "vacation notice period"
+   # - "holiday calendar"
+
+   # Another example with multiple aspects
+   agent$process_task(
+     "I need to organize a team meeting and order lunch.
+      What are the relevant policies and procedures?"
+   )
+
+   # The agent might query:
+   # - "meeting room booking"
+   # - "catering policy"
+   # - "expense reimbursement"
+   # - "dietary restrictions policy"
    ```
 
 ## Model Selection
