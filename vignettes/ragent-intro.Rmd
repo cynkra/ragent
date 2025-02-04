@@ -26,11 +26,13 @@ Before using `ragent`, make sure you have:
 2. Required models pulled:
    - llama2-3b:1b (for simple tasks)
    - deepseek-r1:8b (for complex reasoning)
+   - nomic-embed-text (for knowledge base embeddings)
 
 You can pull these models using:
 ```bash
 ollama pull llama2-3b:1b
 ollama pull deepseek-r1:8b
+ollama pull nomic-embed-text
 ```
 
 ## Basic Usage
@@ -87,29 +89,72 @@ Now we can ask the agent to perform calculations:
 agent_with_tools$process_task("Calculate the square root of 21432.13213")
 ```
 
-## Creating Custom Tools
+### Knowledge Base Tool
 
-You can create your own tools by writing functions that take a string argument and return a result:
+The knowledge base tool is a powerful feature that enables semantic search over your local documentation using vector embeddings. It works by:
 
-```{r}
-# Example custom tool
-weather_tool <- function(location) {
-  paste("The weather in", location, "is sunny (this is a mock response)")
-}
+1. **Document Processing**:
+   - Reads markdown and text files from a specified directory
+   - Splits documents into meaningful chunks (e.g., by paragraphs)
+   - Maintains source information for each chunk
 
-# Add description to weather tool
-attr(weather_tool, "description") <- "Returns a weather report for a given location."
+2. **Vector Embeddings**:
+   - Uses the nomic-embed-text model to create embeddings
+   - Embeddings capture the semantic meaning of text
+   - Enables similarity-based search beyond simple keyword matching
 
-agent_weather <- create_agent(
-  tools = list(
-    weather_tool = weather_tool
-  ),
-  system_prompt = "You are a helpful assistant specialized in weather reports."
+3. **Efficient Storage**:
+   - Stores embeddings in a local vector store (RDS file)
+   - Automatically updates when documents change
+   - Optimized for quick similarity searches
+
+4. **Smart Search**:
+   - Finds the most semantically relevant chunks for each query
+   - Returns multiple context chunks with similarity scores
+   - Preserves source information for traceability
+
+Let's look at some examples:
+
+```{r eval=FALSE}
+# Create a knowledge base tool
+knowledgebase <- kb_tool(
+  dir = "~/knowledgebase",  # your existing knowledge base
+  n_context = 3             # number of similar chunks to return
 )
 
-agent_weather$process_task("How is the weather in Zurich?")
+# Use the tool directly
+knowledgebase("How do I submit a receipt?")
 
+# Try different queries
+knowledgebase("What are our policies?")
+knowledgebase("What are the office hours?")
+
+# You can also update the knowledge base when files change
+# update_vector_store("~/knowledgebase")
 ```
+
+The tool returns the most relevant chunks from your knowledge base, including source information and similarity scores. This is useful when you want to:
+- Quickly search through documentation
+- Find specific policies or procedures
+- Look up information across multiple files
+- Get context-aware answers to questions
+
+The tool can be used in two ways:
+
+1. **Standalone Usage**:
+   ```r
+   # Direct usage
+   knowledgebase("What are our vacation policies?")
+   ```
+
+2. **As Part of an Agent**:
+   ```r
+   agent <- create_agent(
+     tools = list(knowledgebase = knowledgebase),
+     system_prompt = "You are a helpful assistant that can answer questions based on the knowledge base."
+   )
+   agent$process_task("Tell me about our vacation policies.")
+   ```
 
 ## Model Selection
 

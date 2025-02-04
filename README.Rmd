@@ -9,6 +9,19 @@ A simple R package demonstrating agent functionality using local LLMs through Ol
 ## Installation
 
 You need to have [Ollama](https://ollama.ai/) installed and running on your system.
+Then pull the required models:
+
+```bash
+# For basic queries
+ollama pull llama3.2:1b
+
+# For complex reasoning
+ollama pull deepseek-r1:1.5b
+
+# For embeddings (knowledge base)
+ollama pull nomic-embed-text
+```
+
 Then you can install the package from GitHub:
 
 ```r
@@ -49,8 +62,41 @@ agent_with_tools$process_task("Calculate 123 * 456")
 - Dual model approach:
   - llama3.2:1b for simple queries
   - deepseek-r1:1.5b for complex reasoning
+- Knowledge base querying with vector embeddings
 - Extensible tool system
-- Pure R implementation
+
+## Knowledge Base Tool
+
+The package includes a tool for querying a local knowledge base using vector embeddings:
+
+```r
+# Create a knowledge base tool
+kb <- kb_tool(
+  dir = "~/knowledgebase",  # directory with markdown/text files
+  n_context = 3             # number of similar chunks to use
+)
+
+# Create an agent with the knowledge base tool
+agent <- create_agent(
+  tools = list(kb = kb),
+  system_prompt = "You are a helpful assistant that can answer questions based on the knowledge base."
+)
+
+# Query the knowledge base
+agent$process_task("How do I submit a receipt?")
+```
+
+The knowledge base tool will:
+1. Create embeddings for all markdown/text files in the specified directory
+2. Find the most relevant chunks for each query using vector similarity
+3. Return formatted results with source information and similarity scores
+
+You can update the knowledge base when files change:
+
+```r
+# Force update of vector store
+update_vector_store("~/knowledgebase")
+```
 
 ## License
 

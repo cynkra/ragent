@@ -42,3 +42,32 @@ ollama_client <- function(model, system_prompt = NULL, format = NULL) {
 
   list(chat = chat)
 }
+
+#' Get Embeddings from Ollama
+#'
+#' Gets embeddings for text using the Ollama API.
+#'
+#' @param text Text to get embeddings for
+#' @param model Model to use for embeddings (default: "nomic-embed-text")
+#' @return List containing the embedding vector
+#' @export
+ollama_embedding <- function(text, model = "nomic-embed-text") {
+  response <- httr::POST(
+    url = "http://localhost:11434/api/embeddings",
+    body = list(
+      model = model,
+      prompt = text
+    ),
+    encode = "json"
+  )
+
+  if (response$status_code != 200) {
+    stop("Error getting embeddings from Ollama API")
+  }
+
+  content <- jsonlite::fromJSON(
+    rawToChar(response$content)
+  )
+
+  content
+}
