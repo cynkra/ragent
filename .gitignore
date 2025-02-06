@@ -1,2 +1,4 @@
 /.quarto/
 README.html
+vignettes/*.html
+.DS_Store
