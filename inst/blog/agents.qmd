@@ -1,13 +1,10 @@
 ---
 title: "Playing with AI Agents in R"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Playing with AI Agents in R}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+format: html
 ---
 
-```{r, include = FALSE}
+```{r}
+#| include: false
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -32,6 +29,7 @@ Let's explore how we can use of this to run agents in R. I created a simple toy 
 Agents are chats that can do stuff. And R is a wonderful language to tell LLMs what to do.
 
 Think about it this way:
+
 1. You tell them what you want in plain English
 2. They figure out what tools they need
 3. They get the job done and explain what they did
@@ -56,7 +54,8 @@ I will use diagrams to show the conversation flow and the tools that are used.
 
 Getting started is straightforward. First, let's see what we can do with plain chat:
 
-```{r, eval = FALSE}
+```{r}
+#| eval: false
 library(ragent)
 
 # Let's chat!
@@ -66,9 +65,7 @@ llm_chat("What is the capital of France?")
 
 No surprise here. It's just a chat.
 
-```{r simple-chat, echo=FALSE, message=FALSE}
-library(DiagrammeR)
-mermaid("
+```{mermaid}
 sequenceDiagram
     participant User
     participant LLM
@@ -76,18 +73,25 @@ sequenceDiagram
     User->>LLM: Question
     Note over LLM: No tools needed
     LLM-->>User: Direct response
-")
 ```
 
 ## A simple agent
 
 Here comes the good part! Let's turn our LLM into a calculator that actually understands what we're asking:
 
-```{r, eval = FALSE}
-# Let's start easy
-agent_calculator("What is 15% of 850?")
-#> 15% of 850 equals 127.50.
-#> This is calculated as 850 * 0.15.
+```{r}
+#| eval: false
+# Let's start with something tricky
+
+llm_chat("What date is it?")
+
+
+
+agent_calculator("What is 0.1 + 0.2?")
+#> The result is exactly 0.3
+#>
+#> Note: While many systems struggle with floating point precision
+#> (try this in JavaScript!), R handles this calculation correctly.
 
 # Time for pizza math!
 agent_calculator("If I have 3 pizzas and each is cut into 8 slices,
@@ -99,9 +103,7 @@ agent_calculator("If I have 3 pizzas and each is cut into 8 slices,
 #> Therefore, 4 slices remain.
 ```
 
-```{r calculator-flow, echo=FALSE, message=FALSE}
-library(DiagrammeR)
-mermaid("
+```{mermaid}
 sequenceDiagram
     participant User
     participant Agent
@@ -113,10 +115,10 @@ sequenceDiagram
     Calculator Tool-->>Agent: Numerical result
     Note over Agent: Formats response
     Agent-->>User: Explained calculation
-")
 ```
 
 Cool, right? Our agent:
+
 - Takes plain English questions
 - Does the math for us
 - Shows exactly how it got there
@@ -125,7 +127,8 @@ Cool, right? Our agent:
 
 Now here's where it gets really interesting. Let's build a RAG agent - think of it as a smart librarian for your docs:
 
-```{r, eval = FALSE}
+```{r}
+#| eval: false
 # First, let's feed it some knowledge
 writeLines(
   "The tidyverse is a collection of R packages designed for data science.
@@ -141,9 +144,7 @@ agent_rag("What is ggplot2 used for?", dir = "docs/")
 #> [Source: tidyverse.md]
 ```
 
-```{r rag-flow, echo=FALSE, message=FALSE}
-library(DiagrammeR)
-mermaid("
+```{mermaid}
 sequenceDiagram
     participant User
     participant Agent
@@ -158,7 +159,6 @@ sequenceDiagram
     RAG Tool-->>Agent: Context + passages
     Note over Agent: Synthesizes answer<br/>with citations
     Agent-->>User: Contextualized response
-")
 ```
 
 Look at that! Our agent:
@@ -167,7 +167,6 @@ Look at that! Our agent:
 - Even cites its sources (such a good student!)
 
 ## Conclusion
-
 
 It's a sweet setup for tinkering:
 - We've got R doing what R does best
@@ -201,7 +200,8 @@ Want to join the fun?
 
 The best part? It's all running right there on your machine. No cloud needed, no API keys to manage - just pure local LLM goodness! 🚀
 
-```{r, include = FALSE}
+```{r}
+#| include: false
 # Clean up demo files
 unlink("docs", recursive = TRUE)
 ```

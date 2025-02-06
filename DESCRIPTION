@@ -17,6 +17,5 @@ Imports:
 Suggests:
     testthat (>= 3.0.0),
     knitr,
-    rmarkdown,
-    DiagrammeR
+    rmarkdown
 Config/testthat/edition: 3
