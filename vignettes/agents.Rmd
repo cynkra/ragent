@@ -66,6 +66,19 @@ llm_chat("What is the capital of France?")
 
 No surprise here. It's just a chat.
 
+```{r simple-chat, echo=FALSE, message=FALSE}
+library(DiagrammeR)
+mermaid("
+sequenceDiagram
+    participant User
+    participant LLM
+
+    User->>LLM: Question
+    Note over LLM: No tools needed
+    LLM-->>User: Direct response
+")
+```
+
 ## A simple agent
 
 Here comes the good part! Let's turn our LLM into a calculator that actually understands what we're asking:
@@ -84,6 +97,23 @@ agent_calculator("If I have 3 pizzas and each is cut into 8 slices,
 #> 2. Eaten slices = 5 people * 4 slices = 20 slices
 #> 3. Remaining slices = 24 - 20 = 4 slices
 #> Therefore, 4 slices remain.
+```
+
+```{r calculator-flow, echo=FALSE, message=FALSE}
+library(DiagrammeR)
+mermaid("
+sequenceDiagram
+    participant User
+    participant Agent
+    participant Calculator Tool
+
+    User->>Agent: Math question
+    Note over Agent: Analyzes question<br/>Decides to use calculator
+    Agent->>Calculator Tool: Structured calculation request
+    Calculator Tool-->>Agent: Numerical result
+    Note over Agent: Formats response
+    Agent-->>User: Explained calculation
+")
 ```
 
 Cool, right? Our agent:
@@ -111,11 +141,30 @@ agent_rag("What is ggplot2 used for?", dir = "docs/")
 #> [Source: tidyverse.md]
 ```
 
+```{r rag-flow, echo=FALSE, message=FALSE}
+library(DiagrammeR)
+mermaid("
+sequenceDiagram
+    participant User
+    participant Agent
+    participant RAG Tool
+    participant Documents
+
+    User->>Agent: Question about docs
+    Note over Agent: Analyzes question<br/>Decides to use RAG
+    Agent->>RAG Tool: Search request
+    RAG Tool->>Documents: Search in directory
+    Documents-->>RAG Tool: Relevant passages
+    RAG Tool-->>Agent: Context + passages
+    Note over Agent: Synthesizes answer<br/>with citations
+    Agent-->>User: Contextualized response
+")
+```
+
 Look at that! Our agent:
 - Reads through the docs
 - Picks out exactly what we need
 - Even cites its sources (such a good student!)
-
 
 ## Conclusion
 
