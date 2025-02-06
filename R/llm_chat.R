@@ -33,6 +33,11 @@ llm_chat <- function(prompt,
                     system_prompt = NULL,
                     format = NULL) {
 
+  # Input validation
+  if (is.null(prompt) || nchar(prompt) == 0) {
+    stop("Prompt cannot be empty")
+  }
+
   # Build messages list
   messages <- list(list(role = "user", content = prompt))
   if (!is.null(system_prompt)) {
@@ -74,7 +79,6 @@ llm_chat <- function(prompt,
 
   # If format was specified, parse the JSON response
   if (!is.null(format)) {
-    print(content)
     content <- tryCatch({
       jsonlite::fromJSON(content)
     }, error = function(e) {

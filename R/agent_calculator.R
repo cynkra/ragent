@@ -96,7 +96,7 @@ Your task is to take a calculation and its result, then provide a clear, concise
 Examples:
 
 For 'sqrt(16) = 4':
-The square root of 16 is 4, which means 4 × 4 = 16.
+The square root of 16 is 4, which means 4 x 4 = 16.
 
 For 'pi * 5 = 15.70796':
 5 times pi is approximately 15.71 (rounded to 2 decimal places).

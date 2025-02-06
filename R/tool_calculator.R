@@ -28,5 +28,11 @@ tool_calculator <- function(query) {
     stop(sprintf("Expression '%s' did not result in a number", query))
   }
 
+  # Check for NaN or complex results
+  if (is.complex(result) || is.nan(result)) {
+    stop("Could not evaluate")
+  }
+
   result
 }
+

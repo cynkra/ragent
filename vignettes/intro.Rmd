@@ -1,0 +1,122 @@
+---
+title: "Introduction to ragent"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to ragent}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The `ragent` package provides AI agents that can perform tasks using local LLMs (Large Language Models). This vignette introduces the two main agents: the calculator agent for mathematical operations and the RAG agent for document search and question answering.
+
+## Calculator Agent
+
+The calculator agent combines R's computational power with natural language understanding. It can:
+- Parse natural language queries into mathematical expressions
+- Perform calculations safely
+- Provide human-friendly explanations of results
+
+```{r, eval = FALSE}
+library(ragent)
+
+# Simple arithmetic with explanation
+agent_calculator("What is 123.434235435345 times the square root of 2?")
+#> The calculation '123.434235435345 * sqrt(2)' equals approximately 174.57.
+#> This multiplies a large number by the square root of 2 (≈1.4142).
+
+# Percentage calculations
+agent_calculator("What is 15% of 850?")
+#> 15% of 850 equals 127.50.
+#> This is calculated as 850 * 0.15.
+
+# Mathematical functions
+agent_calculator("What is the square root of 16?")
+#> The square root of 16 is 4, which means 4 x 4 = 16.
+```
+
+The agent works in three steps:
+1. Parses the natural language query into a mathematical expression
+2. Evaluates the expression safely using R
+3. Generates a human-friendly explanation of the result
+
+You can customize the model used for explanations:
+```{r, eval = FALSE}
+# Use a different model for more detailed explanations
+agent_calculator("What is pi times 5?", model = "deepseek-r1:8b")
+#> 5 times pi equals approximately 15.71 (rounded to 2 decimal places).
+#> Pi (π) is the mathematical constant representing the ratio of a circle's
+#> circumference to its diameter.
+```
+
+## RAG Agent (Retrieval Augmented Generation)
+
+The RAG agent helps answer questions by searching through a knowledge base of documents. It uses:
+- Vector embeddings for semantic search
+- Multi-step retrieval for comprehensive answers
+- Source citations for transparency
+
+Here's how to use the RAG agent with a simple knowledge base:
+
+```{r}
+# Create a simple knowledge base for demonstration
+dir.create("kb_demo")
+writeLines(
+  "Office hours are Monday to Friday, 9 AM to 5 PM.
+  The cafeteria is open from 8 AM to 3 PM.
+  Staff meetings are held every Tuesday at 10 AM.",
+  "kb_demo/office.md"
+)
+```
+
+```{r, eval = FALSE}
+# Ask questions about the knowledge base
+agent_rag("What are the office hours?", dir = "kb_demo")
+#> Based on the information in the documents:
+#> The office hours are Monday to Friday, from 9 AM to 5 PM.
+#> [Source: office.md]
+
+# The agent can handle follow-up questions
+agent_rag("When are staff meetings held?", dir = "kb_demo")
+#> According to the documents:
+#> Staff meetings are scheduled for every Tuesday at 10 AM.
+#> [Source: office.md]
+
+# Use more context chunks for detailed answers
+agent_rag(
+  "Tell me about all scheduled meetings and hours.",
+  dir = "kb_demo",
+  n_context = 5
+)
+#> Based on the available information:
+#> - Office hours: Monday to Friday, 9 AM to 5 PM
+#> - Staff meetings: Every Tuesday at 10 AM
+#> - Cafeteria hours: 8 AM to 3 PM
+#> [Source: office.md]
+```
+
+The RAG agent works in multiple steps:
+1. Performs initial semantic search to find relevant context
+2. Generates follow-up questions to gather more information
+3. Combines all retrieved information to provide a comprehensive answer
+4. Includes citations to source documents
+
+## Next Steps
+
+The `ragent` package is designed to be extensible:
+- Create custom tools for specific tasks
+- Combine multiple agents for complex workflows
+- Use different LLM models for different needs
+
+Check the package documentation for more advanced features and customization options.
+
+```{r, include = FALSE}
+# Clean up demo files
+unlink("kb_demo", recursive = TRUE)
+```

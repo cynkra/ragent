@@ -1,19 +1,21 @@
 Package: ragent
-Title: Simple R Agent Using Local LLM
+Title: R Agents Using Local LLMs
 Version: 0.0.0.9000
 Authors@R:
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: Demonstrates a simple agent model in R using local LLM through
-    Ollama's API directly. The package provides basic agent functionality
-    for task execution and reasoning, using llama3.2:1b for simple tasks and
-    deepseek-r1:1.5b for complex reasoning.
-License: MIT + file LICENSE
+    person("Christoph", "Sax", , "christoph.sax@gmail.com", role = c("aut", "cre"))
+Description: Create AI agents that can use tools and search through documentation.
+License: GPL-3
+URL: https://github.com/christophsax/ragent
+BugReports: https://github.com/christophsax/ragent/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+VignetteBuilder: knitr
 Imports:
     httr,
     jsonlite
 Suggests:
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3
