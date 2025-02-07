@@ -9,7 +9,7 @@
 #'        See https://ollama.com/blog/structured-outputs for details and examples.
 #' @return If format is specified, returns a parsed R object.
 #'         Otherwise, returns a character string containing the model's response.
-#' @importFrom httr POST add_headers content
+#' @importFrom httr2 request req_headers req_body_json req_perform resp_body_json
 #' @importFrom jsonlite toJSON fromJSON
 #' @export
 #' @examples
@@ -56,26 +56,20 @@ llm_chat <- function(prompt,
     body$format <- format
   }
 
-  response <- httr::POST(
-    url = "http://localhost:11434/api/chat",
-    body = jsonlite::toJSON(body, auto_unbox = TRUE),
-    httr::add_headers("Content-Type" = "application/json")
-  )
+  # Make request using httr2
+  response <- httr2::request("http://localhost:11434/api/chat") |>
+    httr2::req_headers("Content-Type" = "application/json") |>
+    httr2::req_body_json(body, auto_unbox = TRUE) |>
+    httr2::req_perform()
 
-  # Parse the response from Ollama
-  raw_content <- rawToChar(httr::content(response, as = "raw"))
-  result <- tryCatch({
-    jsonlite::fromJSON(raw_content)
-  }, error = function(e) {
-    stop("Failed to parse Ollama response: ", e$message)
-  })
+  # Parse the response
+  result <- httr2::resp_body_json(response)
 
   # Extract the message content
   content <- result$message$content
   if (is.null(content)) {
     stop("No content in Ollama response")
   }
-
 
   # If format was specified, parse the JSON response
   if (!is.null(format)) {
