@@ -13,60 +13,57 @@ knitr::opts_chunk$set(
 
 ## Intro
 
-Crazy months have passed since I've first started to [play with local LLMs](https://blog.cynkra.com/posts/2024-07-27-llama3.1/).
+What a ride since I've first started to [play with local LLMs](https://blog.cynkra.com/posts/2024-07-27-llama3.1/).
+With various new Llama models, we got awesome small and large models that run smoothly on consumer hardware.
+With deepseek R1, we got some ridicoulously good MIT-licensed models that are competitive with the best models from OpenAI.
 
-With llama 3.2 and 3.3, we got fantastic small and large models that run on consumer hardware.
-With deepseek R1, we got some ridicoulously good MIT-licensed models that are competitive with the best Models from OpenAI.
+And now, we also got a shiny fully-speced M4 Mac Mini for our office that runs all of this like a charm. It's local LLM time! 🥳
 
-And now, we got a shiny fully-speced M4 Mac Mini for our office that runs all of this like a charm.
-
-It's local LLM time! 🥳
-
-Let's explore how we can use of this to run agents in R. I created a simple toy package to demonstrate some key concepts of AI agents in R.
+Let's explore how we can use all of this to run agents in R. I created a simple toy package to demonstrate some key concepts of AI agents in R.
 
 ## What is an agent?
 
-Agents are chats that can do stuff. And R is a wonderful language to tell LLMs what to do.
+Agents are chats that can use tools do acutal stuff. And R is a wonderful language to tell tools what to do.
 
 Think about it this way:
 
-1. You tell them what you want in plain English
-2. They figure out what tools they need
-3. They get the job done and explain what they did
+1. You tell an LMM what you want in plain English and the tools you have available
+2. The LMM figures out what tools it needs to use
+3. The agent uses the tools to get the job done
+4. Iterate, improve or continue with other tasks
+5. Let the LMM explain what it did
 
 ## R and Ollama
 
-For my experiments with agents, I'm using plain R and ollama.
-I know that there is the R package `ellmer`, and you can do many thinks that I am doint here with it.
+For the following experiments with agents, I'm using plain R and ollama.
 
-However, I found that `ellmer` is confuscating the working of tools within agents.
+I know that there is the R package [ellmer](https://ellmer.tidyverse.org), and you can do many thinks that I am doint here with it.
+While [ellmer](https://ellmer.tidyverse.org) is a great package, I prefer to work directly with the ollama API. In my opinion, this gives us more transparency of the agent mechanics.
 
-By talking directly to the ollama API, we see exactly what they are doing:
+My experiments with agents in R can be found in the [ragent](https://github.com/cynkra/ragent) repository on GitHub. To install the package, use:
 
-- How tools are defined
-- What structured output looks like
-- How the whole conversation flows
+```{r}
+#| eval: false
+remotes::install_github("cynkra/ragent")
+```
 
 I will use diagrams to show the conversation flow and the tools that are used.
 
-
 ## A simple chat
 
-Getting started is straightforward. First, let's see what we can do with plain chat:
+Getting started is straightforward. In `llm_chat()` I've used the `http2` package to wrap the ollama API.
 
 ```{r}
 #| eval: false
 library(ragent)
-
-# Let's chat!
 llm_chat("What is the capital of France?")
 #> Paris is the capital of France.
 ```
 
-No surprise here. It's just a chat.
 
 ```{mermaid}
 sequenceDiagram
+    autonumber
     participant User
     participant LLM
 
@@ -75,133 +72,123 @@ sequenceDiagram
     LLM-->>User: Direct response
 ```
 
-## A simple agent
 
-Here comes the good part! Let's turn our LLM into a calculator that actually understands what we're asking:
+No surprise here. It's just a chat: The user asks a question (1) and the LLM answers (2). By default, I am using the [`llama3.2:3b`](https://ollama.com/library/llama3.2) model, because it's fast and good enough for this demo. But I can change it to any other model that ollama supports. E.g,:
 
 ```{r}
 #| eval: false
-# Let's start with something tricky
-
-llm_chat("What date is it?")
-
-
-
-agent_calculator("What is 0.1 + 0.2?")
-#> The result is exactly 0.3
-#>
-#> Note: While many systems struggle with floating point precision
-#> (try this in JavaScript!), R handles this calculation correctly.
-
-# Time for pizza math!
-agent_calculator("If I have 3 pizzas and each is cut into 8 slices,
-                 and 5 people eat 4 slices each, how many slices remain?")
-#> Let's solve this step by step:
-#> 1. Total slices = 3 pizzas * 8 slices = 24 slices
-#> 2. Eaten slices = 5 people * 4 slices = 20 slices
-#> 3. Remaining slices = 24 - 20 = 4 slices
-#> Therefore, 4 slices remain.
+llm_chat("What is the capital of France?", model = "deepseek-r1:14b")
 ```
+
+
+## Structured output
+
+The ollama API supports structured output. We can use this to tell the LLM to return a specific format. For example:
+
+```{r}
+#| eval: false
+llm_chat("What is the capital of France?", format = list(
+  type = "object",
+  properties = list(
+    country = list(type = "string"),
+    capital = list(type = "string")
+  ),
+  required = c("country", "capital")
+))
+#> $country
+#> [1] "France"
+#>
+#> $capital
+#> [1] "Paris"
+```
+
+This structured response makes it easy to process the output programmatically in R, as it will be automatically converted to a list with named elements. It is often a good idea to add a system prompt to guide the LLM to the desired output.
+
+
+## A agent that can calculate
+
+This is now a sweet setup for tinkering. We can use R to work with this output to do more complex things.
+
+Note that LLMs are not really good at calculating. The small Llama model that I am using here messes this up:
+
+```{r}
+#| eval: false
+llm_chat("What is 2.111^2.111")
+#> [1] "To calculate this, we can use the formula for squaring a binomial:\n\n(a + b)^2 = a^2 + 2ab + b^2\n\nIn this case, a = 2 and b = 1.111.\n\nSo, \n\n(2 + 1.111)^2 = \n(3.111)^2 = 9.377226\n2*3.111 = 6.222442\n6.222442 + 9.377226 = 15.600668\n\nTherefore, 2.111^2.111 ≈ 15.60"
+```
+
+But we can tell the LLM to use a calculator tool to do the calculation in R. The result looks like this:
+
+```{r}
+#| eval: false
+agent_calculator("What is 2.111^2.111")
+#> **Calculation Result:** 2.111^2.111 = 4.84166414903285
+```
+
 
 ```{mermaid}
 sequenceDiagram
+    autonumber
     participant User
     participant Agent
-    participant Calculator Tool
+    participant Calculator
 
     User->>Agent: Math question
     Note over Agent: Analyzes question<br/>Decides to use calculator
-    Agent->>Calculator Tool: Structured calculation request
-    Calculator Tool-->>Agent: Numerical result
+    Agent->>Calculator: Structured calculation request
+    Calculator-->>Agent: Numerical result
     Note over Agent: Formats response
     Agent-->>User: Explained calculation
 ```
 
-Cool, right? Our agent:
+Much better! This is an agent that:
 
-- Takes plain English questions
-- Does the math for us
-- Shows exactly how it got there
+1. Analyzes the question
+2. Decides to use the calculator tool
+3. Uses the calculator tool to calculate the result in R
+4. Returns the response to the user
 
-## Something useful
+## A smarter RAG
 
-Now here's where it gets really interesting. Let's build a RAG agent - think of it as a smart librarian for your docs:
+A basic RAG system works by querying a knowledge base for relevant passages to the question first, and then using that context to answer the question.
+
+
+```{mermaid}
+sequenceDiagram
+    autonumber
+    participant User
+    participant Agent
+    participant RAG
+    participant Docs
+
+    User->>Agent: Question about docs
+    Note over Agent: Analyzes question<br/>Decides to use RAG
+    Agent->>RAG: Search request
+    RAG->>Docs: Search in directory
+    Docs-->>RAG: Relevant passages
+    RAG-->>Agent: Context + passages
+    Note over Agent: Synthesizes answer<br/>with citations
+    Agent-->>User: Contextualized response
+```
+
+In our smarter RAG, we build an agent that
+
+- Search the knowledge base for relevant passages
+- Ask the LLM to provide additional questions to search for
+- Search the knowledge base for the additional questions
+- Use the context to answer the question
+
 
 ```{r}
 #| eval: false
-# First, let's feed it some knowledge
-writeLines(
-  "The tidyverse is a collection of R packages designed for data science.
-   Core packages include ggplot2 for visualization, dplyr for data manipulation,
-   and tidyr for data tidying. All packages share common design principles.",
-  "docs/tidyverse.md"
-)
-
-# Time to test its memory
 agent_rag("What is ggplot2 used for?", dir = "docs/")
 #> Based on the documentation:
 #> ggplot2 is a core package of the tidyverse used for visualization.
 #> [Source: tidyverse.md]
 ```
 
-```{mermaid}
-sequenceDiagram
-    participant User
-    participant Agent
-    participant RAG Tool
-    participant Documents
-
-    User->>Agent: Question about docs
-    Note over Agent: Analyzes question<br/>Decides to use RAG
-    Agent->>RAG Tool: Search request
-    RAG Tool->>Documents: Search in directory
-    Documents-->>RAG Tool: Relevant passages
-    RAG Tool-->>Agent: Context + passages
-    Note over Agent: Synthesizes answer<br/>with citations
-    Agent-->>User: Contextualized response
-```
-
-Look at that! Our agent:
-- Reads through the docs
-- Picks out exactly what we need
-- Even cites its sources (such a good student!)
+This is just the beginning. We can build much more complex agents. For example, we could create a general agent that combines both the calculator and RAG capabilities. This agent would analyze each question and automatically choose the right approach - either searching the knowledge base or performing calculations.
 
 ## Conclusion
 
-It's a sweet setup for tinkering:
-- We've got R doing what R does best
-- Ollama keeping things local and snappy
-- Everything visible and hackable
-- No magic, just code we can understand
-
-## Next steps
-
-After all this playing around, what have we learned?
-
-1. **This Actually Works!**
-   - These agents really understand us
-   - They can use real tools
-   - They explain everything they do
-
-2. **It's Not Rocket Science**
-   - Break down the big stuff
-   - Pick the right tools
-   - Keep track of what's happening
-
-3. **Time to Experiment**
-   - All the code is there to play with
-   - You can see every moving part
-   - Perfect for tinkering
-
-Want to join the fun?
-- Try your own tools
-- Add whatever features you dream up
-- Build something cool
-
-The best part? It's all running right there on your machine. No cloud needed, no API keys to manage - just pure local LLM goodness! 🚀
-
-```{r}
-#| include: false
-# Clean up demo files
-unlink("docs", recursive = TRUE)
-```
+R is a perfect language for building AI agents. Its functional nature makes tools feel like natural building blocks that we can freely combine. The way R handles lists and data frames fits seamlessly with JSON, and the rich ecosystem provides everything we need to build powerful agents. Best of all, R's interactive workflow lets us watch our agents in action, making development feel like a conversation itself.

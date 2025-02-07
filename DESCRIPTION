@@ -2,11 +2,11 @@ Package: ragent
 Title: R Agents Using Local LLMs
 Version: 0.0.0.9000
 Authors@R:
-    person("Christoph", "Sax", , "christoph.sax@gmail.com", role = c("aut", "cre"))
+    person("Christoph", "Sax", , "christoph@cynkra.com", role = c("aut", "cre"))
 Description: Create AI agents that can use tools and search through documentation.
 License: GPL-3
-URL: https://github.com/christophsax/ragent
-BugReports: https://github.com/christophsax/ragent/issues
+URL: https://github.com/cynkra/ragent
+BugReports: https://github.com/cynkra/ragent/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
