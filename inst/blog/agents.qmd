@@ -162,21 +162,26 @@ sequenceDiagram
     participant Docs
 
     User->>Agent: Question about docs
-    Note over Agent: Analyzes question<br/>Decides to use RAG
-    Agent->>RAG: Search request
+    Note over Agent: Analyzes question
+    Agent->>RAG: Initial search
     RAG->>Docs: Search in directory
-    Docs-->>RAG: Relevant passages
-    RAG-->>Agent: Context + passages
-    Note over Agent: Synthesizes answer<br/>with citations
-    Agent-->>User: Contextualized response
+    Docs-->>RAG: Initial passages
+    RAG-->>Agent: Initial context
+    Note over Agent: Formulates follow-up<br/>questions for context
+    Agent->>RAG: Additional searches
+    RAG->>Docs: Search with new questions
+    Docs-->>RAG: Additional passages
+    RAG-->>Agent: Combined context
+    Note over Agent: Synthesizes all<br/>information
+    Agent-->>User: Complete response<br/>with citations
 ```
 
 In our smarter RAG, we build an agent that
 
-- Search the knowledge base for relevant passages
-- Ask the LLM to provide additional questions to search for
-- Search the knowledge base for the additional questions
-- Use the context to answer the question
+- Search the knowledge base for relevant passages (2)
+- Ask the LLM to provide additional questions to search for (5)
+- Search the knowledge base for the additional questions (7)
+- Use the context to answer the question (10)
 
 
 ```{r}
