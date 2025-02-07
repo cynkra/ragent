@@ -15,30 +15,30 @@ knitr::opts_chunk$set(
 
 What a ride since I've first started to [play with local LLMs](https://blog.cynkra.com/posts/2024-07-27-llama3.1/).
 With various new Llama models, we got awesome small and large models that run smoothly on consumer hardware.
-With deepseek R1, we got some ridicoulously good MIT-licensed models that are competitive with the best models from OpenAI.
+With deepseek R1, we got some ridiculously good MIT-licensed models that are competitive with the best models from OpenAI.
 
-And now, we also got a shiny fully-speced M4 Mac Mini for our office that runs all of this like a charm. It's local LLM time! 🥳
+And now, we also got a shiny fully-specced M4 Mac Mini for our office that runs all of this like a charm. It's local LLM time! 🥳
 
 Let's explore how we can use all of this to run agents in R. I created a simple toy package to demonstrate some key concepts of AI agents in R.
 
 ## What is an agent?
 
-Agents are chats that can use tools do acutal stuff. And R is a wonderful language to tell tools what to do.
+Agents are chats that can use tools to do actual stuff. And R is a wonderful language to tell tools what to do.
 
 Think about it this way:
 
-1. You tell an LMM what you want in plain English and the tools you have available
-2. The LMM figures out what tools it needs to use
+1. You tell an LLM what you want in plain English and the tools you have available
+2. The LLM figures out what tools it needs to use
 3. The agent uses the tools to get the job done
 4. Iterate, improve or continue with other tasks
-5. Let the LMM explain what it did
+5. Let the LLM explain what it did
 
 ## R and Ollama
 
 For the following experiments with agents, I'm using plain R and ollama.
 
-I know that there is the R package [ellmer](https://ellmer.tidyverse.org), and you can do many thinks that I am doint here with it.
-While [ellmer](https://ellmer.tidyverse.org) is a great package, I prefer to work directly with the ollama API. In my opinion, this gives us more transparency of the agent mechanics.
+I know that there is the R package [ellmer](https://ellmer.tidyverse.org), and you can do many things that I am doing here with it.
+While [ellmer](https://ellmer.tidyverse.org) is a great package, I prefer to work directly with the ollama API. In my opinion, this gives us more transparency into the agent mechanics.
 
 My experiments with agents in R can be found in the [ragent](https://github.com/cynkra/ragent) repository on GitHub. To install the package, use:
 
@@ -51,7 +51,7 @@ I will use diagrams to show the conversation flow and the tools that are used.
 
 ## A simple chat
 
-Getting started is straightforward. In `llm_chat()` I've used the `http2` package to wrap the ollama API.
+Getting started is straightforward. In [llm_chat()](https://github.com/cynkra/ragent/blob/main/R/llm_chat.R), I've used the `http2` package to wrap the ollama API.
 
 ```{r}
 #| eval: false
@@ -117,7 +117,7 @@ llm_chat("What is 2.111^2.111")
 #> [1] "To calculate this, we can use the formula for squaring a binomial:\n\n(a + b)^2 = a^2 + 2ab + b^2\n\nIn this case, a = 2 and b = 1.111.\n\nSo, \n\n(2 + 1.111)^2 = \n(3.111)^2 = 9.377226\n2*3.111 = 6.222442\n6.222442 + 9.377226 = 15.600668\n\nTherefore, 2.111^2.111 ≈ 15.60"
 ```
 
-But we can tell the LLM to use a calculator tool to do the calculation in R. The result looks like this:
+But we can tell the LLM to use a calculator tool to do the calculation in R. The result   [looks like this](https://github.com/cynkra/ragent/blob/main/R/agent_calculator.R):
 
 ```{r}
 #| eval: false
@@ -150,8 +150,9 @@ Much better! This is an agent that:
 
 ## A smarter RAG
 
-A basic RAG system works by querying a knowledge base for relevant passages to the question first, and then using that context to answer the question.
+A simple RAG (Retrieval Augmented Generation) enhances LLM responses by first searching a knowledge base for relevant information. But our smarter RAG goes a step further: after the initial search, the LLM formulates additional questions to gather more context, leading to more comprehensive answers.
 
+In [our smarter RAG](https://github.com/cynkra/ragent/blob/main/R/agent_rag.R), we build an agent that:
 
 ```{mermaid}
 sequenceDiagram
@@ -176,7 +177,7 @@ sequenceDiagram
     Agent-->>User: Complete response<br/>with citations
 ```
 
-In our smarter RAG, we build an agent that
+In [our smarter RAG](https://github.com/cynkra/ragent/blob/main/R/agent_rag.R), we build an agent that
 
 - Search the knowledge base for relevant passages (2)
 - Ask the LLM to provide additional questions to search for (5)
